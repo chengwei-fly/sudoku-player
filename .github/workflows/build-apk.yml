@@ -139,13 +139,17 @@ jobs:
       - name: Build APK
         working-directory: android
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1
-          echo "=== Gradle exit code: $? ==="
-          echo "=== Search for all APK files ==="
-          find . -name "*.apk" -type f 2>/dev/null
+          set -o pipefail
+          ./gradlew assembleDebug --no-daemon --stacktrace > /tmp/gradle.log 2>&1
+          EXIT=$?
+          echo "=== Gradle exit code: $EXIT ==="
+          echo "=== Last 100 lines of log ==="
+          tail -100 /tmp/gradle.log
+          echo "=== Search for FAILURE or error ==="
+          grep -E "FAILURE|error:|What went wrong|Could not" /tmp/gradle.log | head -30 || echo "no errors found in log"
           echo "=== Build outputs ==="
-          ls -laR app/build/outputs/ 2>&1 || echo "no outputs dir"
-          echo "=== End ==="
+          find . -name "*.apk" 2>/dev/null || echo "no apk"
+          exit $EXIT
 
       - name: Verify APK
         id: verify
