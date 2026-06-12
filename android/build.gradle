@@ -21,6 +21,17 @@ allprojects {
         google()
         mavenCentral()
     }
+    // 强制统一 kotlin-stdlib 版本，避免 1.6.x 旧 jdk7/jdk8 子包与 1.8+ 主包类重复
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin'
+                && (details.requested.name.startsWith('kotlin-stdlib')
+                    || details.requested.name == 'kotlin-reflect')) {
+                details.useVersion '1.8.22'
+                details.because '统一 Kotlin stdlib 版本，解决 duplicate class 冲突'
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {
