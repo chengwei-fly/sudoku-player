@@ -134,12 +134,15 @@ jobs:
           echo "Install done"
 
       - name: Build web
+        # Android APK 必须使用相对路径 base，避免 WebView 加载时找不到 /sudoku-player/ 前缀下的资源（白屏）
         env:
-          GITHUB_PAGES: "true"
+          ANDROID_BUILD: "true"
         run: |
           npm run build
           echo "Build done"
           ls -la dist/
+          echo "=== dist/index.html 关键引用检查 ==="
+          grep -E "script|link rel=\"stylesheet\"" dist/index.html || true
 
       - name: Cap sync
         run: |

@@ -3,9 +3,16 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  // GitHub Pages 项目页面的 base 路径
-  // 本地开发时用 './' 相对路径
-  base: process.env.GITHUB_PAGES ? '/sudoku-player/' : './',
+  // base 路径说明：
+  // - GitHub Pages 部署：使用项目子路径 '/sudoku-player/'
+  // - Android APK (Capacitor) 打包：必须使用相对路径 './'，
+  //   否则 WebView 从 https://localhost/ 加载会找不到 /sudoku-player/... 下的资源，导致白屏
+  // - 本地开发：使用相对路径 './'
+  base: process.env.GITHUB_PAGES
+    ? '/sudoku-player/'
+    : process.env.ANDROID_BUILD
+      ? './'
+      : './',
   plugins: [react()],
   resolve: {
     alias: {
