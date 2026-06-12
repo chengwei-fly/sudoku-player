@@ -1,6 +1,11 @@
 name: Build Android APK
 
 on:
+  # 推送到 master 分支时自动构建
+  push:
+    branches:
+      - master
+  # 手动触发（保留备用）
   workflow_dispatch:
 
 jobs:
