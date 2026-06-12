@@ -140,7 +140,6 @@ jobs:
         working-directory: android
         shell: bash
         run: |
-          set -o pipefail
           ./gradlew assembleDebug --no-daemon --stacktrace > /tmp/gradle.log 2>&1
           EXIT=$?
           echo "=== Gradle exit code: $EXIT ==="
@@ -150,6 +149,7 @@ jobs:
           grep -E "FAILURE|error:|What went wrong|Could not" /tmp/gradle.log | head -30 || echo "no errors found in log"
           echo "=== Build outputs ==="
           find . -name "*.apk" 2>/dev/null || echo "no apk"
+          echo "=== Exit ==="
           exit $EXIT
 
       - name: Verify APK
