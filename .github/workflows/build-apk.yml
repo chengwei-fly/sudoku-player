@@ -1,0 +1,146 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch android/build.gradle (downgrade AGP)
+        run: |
+          cat > android/build.gradle << 'EOF'
+          // Top-level build file
+          buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.7.2'
+                  classpath 'com.google.gms:google-services:4.4.2'
+              }
+          }
+          apply from: "variables.gradle"
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          task clean(type: Delete) {
+              delete rootProject.buildDir
+          }
+          EOF
+          echo "=== android/build.gradle patched ==="
+          cat android/build.gradle
+
+      - name: Patch android/variables.gradle (compileSdk 34)
+        run: |
+          cat > android/variables.gradle << 'EOF'
+          ext {
+              minSdkVersion = 23
+              compileSdkVersion = 34
+              targetSdkVersion = 34
+              androidxActivityVersion = '1.8.0'
+              androidxAppCompatVersion = '1.6.1'
+              androidxCoordinatorLayoutVersion = '1.2.0'
+              androidxCoreVersion = '1.12.0'
+              androidxFragmentVersion = '1.6.2'
+              coreSplashScreenVersion = '1.0.1'
+              androidxWebkitVersion = '1.9.0'
+              junitVersion = '4.13.2'
+              androidxJunitVersion = '1.1.5'
+              androidxEspressoCoreVersion = '3.5.1'
+              cordovaAndroidVersion = '14.0.1'
+          }
+          EOF
+          echo "=== android/variables.gradle patched ==="
+          cat android/variables.gradle
+
+      - name: Patch gradle-wrapper.properties
+        run: |
+          cat > android/gradle/wrapper/gradle-wrapper.properties << 'EOF'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-all.zip
+          networkTimeout=10000
+          validateDistributionUrl=true
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+          echo "=== gradle-wrapper.properties patched ==="
+          cat android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          android-version: '34'
+          build-tools-version: '34.0.0'
+          ndk-version: ''
+
+      - name: Debug environment
+        run: |
+          echo "=== Environment ==="
+          pwd
+          node -v
+          npm -v
+          java -version 2>&1
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls -la $ANDROID_HOME/platforms/ 2>&1 || echo "no platforms"
+          echo "=== End environment ==="
+
+      - name: Install dependencies
+        run: |
+          npm install --no-audit --no-fund
+          echo "Install done"
+
+      - name: Build web
+        env:
+          GITHUB_PAGES: "true"
+        run: |
+          npm run build
+          echo "Build done"
+          ls -la dist/
+
+      - name: Cap sync
+        run: |
+          npx cap sync android
+          echo "Cap sync done"
+          ls -la android/
+
+      - name: Gradle wrapper
+        run: |
+          chmod +x android/gradlew
+          ls -la android/gradlew
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tail -200
+          echo "Gradle done"
+          ls -la app/build/outputs/apk/debug/ 2>&1 || echo "no apk"
+
+      - name: Upload APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: warn

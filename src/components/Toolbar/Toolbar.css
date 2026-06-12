@@ -1,0 +1,107 @@
+.toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 70px;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toolbar-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.btn-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.hint-btn .btn-icon {
+  color: #ffc107;
+}
+
+.undo-btn .btn-icon {
+  color: #9e9e9e;
+}
+
+.reset-btn .btn-icon {
+  color: #ef5350;
+}
+
+.check-btn .btn-icon {
+  color: #4caf50;
+}
+
+.pause-btn .btn-icon {
+  color: #2196f3;
+}
+
+.pause-btn.resumed .btn-icon {
+  color: #ff9800;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .toolbar {
+    gap: 8px;
+    padding: 8px 4px;
+  }
+
+  .toolbar-btn {
+    padding: 8px 12px;
+    min-width: 60px;
+  }
+
+  .btn-icon {
+    font-size: 1.25rem;
+  }
+
+  .btn-label {
+    font-size: 0.65rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .toolbar-btn {
+    padding: 12px 20px;
+    min-width: 80px;
+  }
+
+  .btn-icon {
+    font-size: 1.75rem;
+  }
+
+  .btn-label {
+    font-size: 0.85rem;
+  }
+}
