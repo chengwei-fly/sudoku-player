@@ -133,14 +133,31 @@ jobs:
       - name: Build APK
         working-directory: android
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tail -200
-          echo "Gradle done"
-          ls -la app/build/outputs/apk/debug/ 2>&1 || echo "no apk"
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1
+          echo "=== Gradle exit code: $? ==="
+          echo "=== Search for all APK files ==="
+          find . -name "*.apk" -type f 2>/dev/null
+          echo "=== Build outputs ==="
+          ls -laR app/build/outputs/ 2>&1 || echo "no outputs dir"
+          echo "=== End ==="
+
+      - name: Verify APK
+        id: verify
+        run: |
+          APK_PATH=$(find android -name "app-debug.apk" -type f 2>/dev/null | head -1)
+          if [ -n "$APK_PATH" ]; then
+            echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+            echo "✓ APK found at: $APK_PATH"
+            ls -la "$APK_PATH"
+          else
+            echo "✗ APK not found anywhere"
+            find android -name "*.apk" 2>&1 || true
+            exit 1
+          fi
 
       - name: Upload APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: warn
+          path: ${{ steps.verify.outputs.apk_path }}
+          if-no-files-found: error
