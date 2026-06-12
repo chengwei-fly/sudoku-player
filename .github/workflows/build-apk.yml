@@ -138,6 +138,7 @@ jobs:
 
       - name: Build APK
         working-directory: android
+        shell: bash
         run: |
           set -o pipefail
           ./gradlew assembleDebug --no-daemon --stacktrace > /tmp/gradle.log 2>&1
