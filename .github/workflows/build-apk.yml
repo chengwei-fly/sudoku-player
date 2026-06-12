@@ -45,13 +45,13 @@ jobs:
           echo "=== android/build.gradle patched ==="
           cat android/build.gradle
 
-      - name: Patch android/variables.gradle (compileSdk 34)
+      - name: Patch android/variables.gradle (compileSdk 35)
         run: |
           cat > android/variables.gradle << 'EOF'
           ext {
               minSdkVersion = 24
-              compileSdkVersion = 34
-              targetSdkVersion = 34
+              compileSdkVersion = 35
+              targetSdkVersion = 35
               androidxActivityVersion = '1.8.0'
               androidxAppCompatVersion = '1.6.1'
               androidxCoordinatorLayoutVersion = '1.2.0'
@@ -97,7 +97,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: '12.0'
-          packages: 'platforms;android-34 build-tools;34.0.0 platform-tools'
+          packages: 'platforms;android-35 build-tools;35.0.0 platform-tools'
 
       - name: Debug environment
         run: |
