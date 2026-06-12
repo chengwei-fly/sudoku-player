@@ -68,7 +68,7 @@ jobs:
           cat > android/gradle/wrapper/gradle-wrapper.properties << 'EOF'
           distributionBase=GRADLE_USER_HOME
           distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.2-all.zip
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.11.1-all.zip
           networkTimeout=10000
           validateDistributionUrl=true
           zipStoreBase=GRADLE_USER_HOME
@@ -86,7 +86,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - name: Setup Android SDK (cmdline-tools)
         uses: android-actions/setup-android@v3
@@ -140,16 +140,15 @@ jobs:
         working-directory: android
         shell: bash
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace > /tmp/gradle.log 2>&1
-          EXIT=$?
-          echo "=== Gradle exit code: $EXIT ==="
-          echo "=== Last 100 lines of log ==="
-          tail -100 /tmp/gradle.log
-          echo "=== Search for FAILURE or error ==="
-          grep -E "FAILURE|error:|What went wrong|Could not" /tmp/gradle.log | head -30 || echo "no errors found in log"
-          echo "=== Build outputs ==="
-          find . -name "*.apk" 2>/dev/null || echo "no apk"
-          echo "=== Exit ==="
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
+          EXIT=${PIPESTATUS[0]}
+          echo "===== Gradle exit code: $EXIT ====="
+          if [ $EXIT -ne 0 ]; then
+            echo "===== FAILURE / Error summary ====="
+            grep -E "FAILURE|What went wrong|error:|Could not|>|Caused by:" /tmp/gradle.log | head -60 || echo "(no matching lines)"
+            echo "===== Build outputs ====="
+            find . -name "*.apk" 2>/dev/null || echo "no apk"
+          fi
           exit $EXIT
 
       - name: Verify APK
