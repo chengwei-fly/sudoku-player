@@ -88,12 +88,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Android SDK
+      - name: Setup Android SDK (cmdline-tools)
         uses: android-actions/setup-android@v3
         with:
-          android-version: '34'
-          build-tools-version: '34.0.0'
-          ndk-version: ''
+          cmdline-tools-version: '12.0'
+          packages: 'platforms;android-34,build-tools;34.0.0,platform-tools'
 
       - name: Debug environment
         run: |
@@ -103,8 +102,15 @@ jobs:
           npm -v
           java -version 2>&1
           echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           ls -la $ANDROID_HOME/platforms/ 2>&1 || echo "no platforms"
+          ls -la $ANDROID_HOME/build-tools/ 2>&1 || echo "no build-tools"
           echo "=== End environment ==="
+
+      - name: Accept Android SDK licenses
+        run: |
+          yes | sdkmanager --licenses 2>&1 || true
+          echo "Licenses accepted"
 
       - name: Install dependencies
         run: |
